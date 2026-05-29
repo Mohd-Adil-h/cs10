@@ -1,0 +1,51 @@
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { FaBolt, FaStar, FaHome } from 'react-icons/fa';
+
+export default function Navbar() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path ? 'navbar-link active' : 'navbar-link';
+
+  return (
+    <nav className="navbar">
+      <div className="container navbar-inner">
+        <Link to="/" className="navbar-brand"><FaBolt style={{ color: '#FCD34D' }} /> Samagama</Link>
+
+        <div className="navbar-links">
+          <Link to="/faq" className={isActive('/faq')}>Ask Yaksha</Link>
+          <Link to="/faq/browse" className={isActive('/faq/browse')}>Browse FAQs</Link>
+          <Link to="/faq/community" className={isActive('/faq/community')}>Community</Link>
+
+          {isAuthenticated && (
+            <Link to="/answer" className={isActive('/answer')}>Answer</Link>
+          )}
+
+          {isAdmin && (
+            <a href="http://localhost:5174" className="navbar-link">Admin Panel</a>
+          )}
+
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className={isActive('/profile')}>Profile</Link>
+              <span className="navbar-xp"><FaStar style={{ color: '#FCD34D', marginBottom: '-2px' }} /> {user?.xp || 0} SP</span>
+              <button className="btn btn-sm btn-secondary" onClick={logout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className={isActive('/login')}>Login</Link>
+              <Link to="/register" className="btn btn-sm btn-primary">Sign Up</Link>
+            </>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', paddingLeft: '1rem' }}>
+          <Link to="/faq/browse" className="btn btn-sm btn-secondary" title="Home - Browse FAQs" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <FaHome size={13} /> Home
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+}

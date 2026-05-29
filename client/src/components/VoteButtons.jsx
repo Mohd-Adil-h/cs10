@@ -1,0 +1,58 @@
+import { useState } from 'react';
+import api from '../api/client';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+
+export default function VoteButtons({ answerId, questionId, initialScore = 0, isOwnAnswer = false, isOwn = false }) {
+  const [score, setScore] = useState(initialScore);
+  const [voted, setVoted] = useState(false);
+  const [error, setError] = useState(null);
+
+  const disabled = isOwn || isOwnAnswer;
+  const endpoint = answerId
+    ? `/answers/${answerId}/vote`
+    : `/questions/${questionId}/vote`;
+  const ownLabel = answerId ? "Can't vote on own answer" : "Can't vote on own question";
+
+  const handleVote = async (type) => {
+    if (voted || disabled) return;
+    setError(null);
+
+    try {
+      const res = await api.post(endpoint, { type });
+      setScore(res.data.net_score);
+      setVoted(true);
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Vote failed';
+      setError(msg);
+    }
+  };
+
+  return (
+    <div>
+      <div className="vote-group">
+        <button
+          className="vote-btn upvote"
+          onClick={() => handleVote('up')}
+          disabled={voted || disabled}
+          title={disabled ? ownLabel : 'Upvote'}
+        >
+          <FaArrowUp />
+        </button>
+        <span className="vote-score" style={{
+          color: score > 0 ? 'var(--accent-success)' : score < 0 ? 'var(--accent-danger)' : 'var(--text-secondary)'
+        }}>
+          {score}
+        </span>
+        <button
+          className="vote-btn downvote"
+          onClick={() => handleVote('down')}
+          disabled={voted || disabled}
+          title={disabled ? ownLabel : 'Downvote'}
+        >
+          <FaArrowDown />
+        </button>
+      </div>
+      {error && <div className="form-error" style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>{error}</div>}
+    </div>
+  );
+}
